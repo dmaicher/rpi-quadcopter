@@ -15,10 +15,9 @@ filter = ComplementaryFilter(interval, sensor)
 
 while True:
     now = time.time()
-
     data = filter.update()
-
     elapsed = time.time() - now
     left = interval-elapsed
     if left > 0:
+        print data.rx, data.ry
         time.sleep(left)

@@ -1,4 +1,5 @@
 import math_utils
+import ctypes
 from i2c import I2C
 
 
@@ -44,18 +45,15 @@ class GyroAccSensor:
 
     def update(self):
         raw_gyro_data = self.i2c.read_block_data(self.REG_GYRO_DATA, 6)
-        self.data.gx = math_utils.twos_compliment((raw_gyro_data[0] << 8) + raw_gyro_data[1]) / self.GYRO_SCALE
-        self.data.gy = math_utils.twos_compliment((raw_gyro_data[2] << 8) + raw_gyro_data[3]) / self.GYRO_SCALE
-        self.data.gz = math_utils.twos_compliment((raw_gyro_data[4] << 8) + raw_gyro_data[5]) / self.GYRO_SCALE
+        self.data.gx = ctypes.c_int16((raw_gyro_data[0] << 8) | raw_gyro_data[1]).value / self.GYRO_SCALE
+        self.data.gy = ctypes.c_int16((raw_gyro_data[2] << 8) | raw_gyro_data[3]).value  / self.GYRO_SCALE
+        self.data.gz = ctypes.c_int16((raw_gyro_data[4] << 8) | raw_gyro_data[5]).value  / self.GYRO_SCALE
 
         raw_acc_data = self.i2c.read_block_data(self.REG_ACC_DATA, 6)
-        self.data.ax = math_utils.twos_compliment((raw_acc_data[0] << 8) + raw_acc_data[1]) / self.ACC_SCALE
-        self.data.ay = math_utils.twos_compliment((raw_acc_data[2] << 8) + raw_acc_data[3]) / self.ACC_SCALE
-        self.data.az = math_utils.twos_compliment((raw_acc_data[4] << 8) + raw_acc_data[5]) / self.ACC_SCALE
+        self.data.ax = ctypes.c_int16((raw_acc_data[0] << 8) | raw_acc_data[1]).value  / self.ACC_SCALE
+        self.data.ay = ctypes.c_int16((raw_acc_data[2] << 8) | raw_acc_data[3]).value  / self.ACC_SCALE
+        self.data.az = ctypes.c_int16((raw_acc_data[4] << 8) | raw_acc_data[5]).value  / self.ACC_SCALE
 
         return self.data
-
-    def dump_byte(self, b):
-        print bin(b)[2:].zfill(8)
 
 
