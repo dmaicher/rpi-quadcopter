@@ -2,11 +2,9 @@ import math_utils
 import ctypes
 from i2c import I2C
 
-
-class GyroAccData:
-    gx = gy = gz = 0
-    ax = ay = az = 0
-
+X = 0
+Y = 1
+Z = 2
 
 class GyroAccSensor:
 
@@ -31,7 +29,8 @@ class GyroAccSensor:
 
     def __init__(self):
         self.i2c = I2C(self.I2C_ADDRESS, self.I2C_BUS_NR)
-        self.data = GyroAccData()
+        self.gyro_scaled_values = [0, 0, 0]
+        self.acc_scaled_values = [0, 0, 0]
 
     def start(self):
         #disable sleep mode and use gyro x as clock source
@@ -43,17 +42,18 @@ class GyroAccSensor:
         #set acc accuracy to full range (16g)
         self.i2c.write_byte_data(self.REG_ACC_CONFIG, self.ACC_RANGE_16)
 
-    def update(self):
+    def get_gyro_scaled_values(self):
         raw_gyro_data = self.i2c.read_block_data(self.REG_GYRO_DATA, 6)
-        self.data.gx = ctypes.c_int16((raw_gyro_data[0] << 8) | raw_gyro_data[1]).value / self.GYRO_SCALE
-        self.data.gy = ctypes.c_int16((raw_gyro_data[2] << 8) | raw_gyro_data[3]).value  / self.GYRO_SCALE
-        self.data.gz = ctypes.c_int16((raw_gyro_data[4] << 8) | raw_gyro_data[5]).value  / self.GYRO_SCALE
+        self.gyro_scaled_values[X] = ctypes.c_int16((raw_gyro_data[0] << 8) | raw_gyro_data[1]).value / self.GYRO_SCALE
+        self.gyro_scaled_values[Y] = ctypes.c_int16((raw_gyro_data[2] << 8) | raw_gyro_data[3]).value / self.GYRO_SCALE
+        self.gyro_scaled_values[Z] = ctypes.c_int16((raw_gyro_data[4] << 8) | raw_gyro_data[5]).value / self.GYRO_SCALE
+        return self.gyro_scaled_values
 
+    def get_acc_scaled_values(self):
         raw_acc_data = self.i2c.read_block_data(self.REG_ACC_DATA, 6)
-        self.data.ax = ctypes.c_int16((raw_acc_data[0] << 8) | raw_acc_data[1]).value  / self.ACC_SCALE
-        self.data.ay = ctypes.c_int16((raw_acc_data[2] << 8) | raw_acc_data[3]).value  / self.ACC_SCALE
-        self.data.az = ctypes.c_int16((raw_acc_data[4] << 8) | raw_acc_data[5]).value  / self.ACC_SCALE
-
-        return self.data
+        self.acc_scaled_values[X] = ctypes.c_int16((raw_acc_data[0] << 8) | raw_acc_data[1]).value / self.ACC_SCALE
+        self.acc_scaled_values[Y] = ctypes.c_int16((raw_acc_data[2] << 8) | raw_acc_data[3]).value / self.ACC_SCALE
+        self.acc_scaled_values[Z] = ctypes.c_int16((raw_acc_data[4] << 8) | raw_acc_data[5]).value / self.ACC_SCALE
+        return self.acc_scaled_values
 
 
