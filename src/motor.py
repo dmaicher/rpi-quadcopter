@@ -11,8 +11,7 @@ class Motor:
         self.pwm_set_power()
 
     def change_power(self, diff):
-        self.power = max(0, min(100, self.power + diff))
-        self.pwm_set_power()
+        self.set_power(self.power + diff)
 
     def set_power(self, power):
         self.power = max(0, min(100, power))
